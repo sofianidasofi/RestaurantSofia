@@ -24,6 +24,8 @@ import com.restaurant.sofia.adapter.RestaurantAdapter;
 import com.restaurant.sofia.data.Session;
 import com.restaurant.sofia.model.ListRestaurantResponse;
 
+import static com.restaurant.sofia.data.Constans.CREATE_RESTAURANT;
+import static com.restaurant.sofia.data.Constans.DELETE_RESTAURANT;
 import static com.restaurant.sofia.data.Constans.GET_LIST_RESTAURANT;
 import static com.restaurant.sofia.data.Constans.GET_SEARCH_RESTAURANT;
 
@@ -90,6 +92,62 @@ public class DashboardActivity extends AppCompatActivity {
             case R.id.menu_account:
                 startActivity(new Intent(DashboardActivity.this, ProfileActivity.class));
                 break;
+                    case R.id.tambahResto:
+                        AndroidNetworking.post(CREATE_RESTAURANT)
+                                .addQueryParameter("userid",session.getUserId())
+                                .addBodyParameter("userid",session.getUserId())
+                                .addBodyParameter("namarm","Seblak Ceker Sofia")
+                                .addBodyParameter("kategori","cafe")
+                                .addBodyParameter("link_foto","https://www.sejutakabar.com/wp-content/uploads/2019/05/resep-seblak-ceker-kuah-pedas-mantap.jpg")
+                                .addBodyParameter("alamat","permai")
+                                .build()
+                                .getAsObject(ListRestaurantResponse.class, new ParsedRequestListener() {
+                                    @Override
+                                    public void onResponse(Object response) {
+                                        if (response instanceof ListRestaurantResponse) {
+                                            //disable progress dialog
+                                            progressDialog.dismiss();
+                                            //null data check
+                                            if (((ListRestaurantResponse) response).getData() !=
+                                                    null && ((ListRestaurantResponse) response).getData().size() > 0) {
+                                                adapter.swap(((ListRestaurantResponse) response).getData());
+                                                adapter.notifyDataSetChanged();
+                                            }
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onError(ANError anError) {
+                                        progressDialog.dismiss();
+                                        Toast.makeText(DashboardActivity.this, "Failed to fetch data", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                        break;
+            case R.id.hapusResto:
+                AndroidNetworking.post(DELETE_RESTAURANT+"/"+session.getUserId())
+                        .build()
+                        .getAsObject(ListRestaurantResponse.class, new ParsedRequestListener() {
+                            @Override
+                            public void onResponse(Object response) {
+                                if (response instanceof ListRestaurantResponse) {
+                                    //disable progress dialog
+                                    progressDialog.dismiss();
+                                    //null data check
+                                    if (((ListRestaurantResponse) response).getData() !=
+                                            null && ((ListRestaurantResponse) response).getData().size() > 0) {
+                                        adapter.swap(((ListRestaurantResponse) response).getData());
+                                        adapter.notifyDataSetChanged();
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onError(ANError anError) {
+                                progressDialog.dismiss();
+                                Toast.makeText(DashboardActivity.this, "Failed to fetch data", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                break;
         }
         return true;
     }
@@ -107,8 +165,7 @@ public class DashboardActivity extends AppCompatActivity {
         adapter.setOnItemClickListener(new RestaurantAdapter.OnItemClickListener() {
             @Override
             public void onClick(int position) {
-                Toast.makeText(DashboardActivity.this, "Clicked Item - " +
-                        position, Toast.LENGTH_SHORT).show();
+                Toast.makeText(DashboardActivity.this, "Clicked Item - " + position, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -127,8 +184,7 @@ public class DashboardActivity extends AppCompatActivity {
                             //disable progress dialog
                             progressDialog.dismiss();
                             //null data check
-                            if (((ListRestaurantResponse) response).getData() !=
-                                    null && ((ListRestaurantResponse) response).getData().size() > 0) {
+                            if (((ListRestaurantResponse) response).getData() != null && ((ListRestaurantResponse) response).getData().size() > 0) {
                                 adapter.swap(((ListRestaurantResponse) response).getData());
                                 adapter.notifyDataSetChanged();
                             }
